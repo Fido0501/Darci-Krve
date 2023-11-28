@@ -1,0 +1,5 @@
+C:/Users/Filda/Desktop/Darce krve/out/build/x64-debug/CMakeFiles/edit_cache.dir
+C:/Users/Filda/Desktop/Darce krve/out/build/x64-debug/CMakeFiles/rebuild_cache.dir
+C:/Users/Filda/Desktop/Darce krve/out/build/x64-debug/Darce krve/CMakeFiles/CMakeTarget.dir
+C:/Users/Filda/Desktop/Darce krve/out/build/x64-debug/Darce krve/CMakeFiles/edit_cache.dir
+C:/Users/Filda/Desktop/Darce krve/out/build/x64-debug/Darce krve/CMakeFiles/rebuild_cache.dir
