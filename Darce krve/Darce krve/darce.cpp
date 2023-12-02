@@ -4,48 +4,108 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <stdlib.h>
-#include <conio.h>
+#include <windows.h>
+#include <ctime>
 #include "darce.h"
 
+#define clear() printf("\033[H\033[J")
+#define gotoxy(x,y) printf("\033[%d;%dH", (y), (x))
 
 using namespace std;
 
+
 FILE* darciDB;
 FILE* darciDBtemp;
+
+/* Pomocna Funkce na prepsani temp souboru do hlavni databaze */
+void tempf() {
+	int id, id1;
+	char jmeno[21], prijmeni[21], skupina[2];
+
+	darciDB = fopen("darciDB.txt", "w");
+	darciDBtemp = fopen("darciDBtemp.txt", "r");
+
+	while (fscanf(darciDBtemp, "%d %s %s\n", &id, jmeno, prijmeni) != EOF) {
+		fprintf(darciDB, "%d %s %s\n", id, jmeno, prijmeni);
+	}
+
+	fclose(darciDB);
+	fclose(darciDBtemp);
+}
 
 /* Funkce na pridani zaznamu */
 void add() {
 	system("cls");
 
-	int id;
+	int id, id1;
+	int temp = 0;
 	char jmeno[21];
 	char prijmeni[21];
 	char skupina[2];
-
-	darciDB = fopen("darciDB.txt", "a");
 	
+
+	FILE* darciDB = fopen("darciDB.txt", "a+");
+	
+	printf("  _____      _     _       _   \n");
+	printf(" |  __ \\    (_)   | |     | |  \n");
+	printf(" | |__) | __ _  __| | __ _| |_ \n");
+	printf(" |  ___/ '__| |/ _` |/ _` | __|\n");
+	printf(" | |   | |  | | (_| | (_| | |_ \n");
+	printf(" |_|   |_|  |_|\\__,_|\\__,_|\\__|\n");
+
 	printf("------------------\n");
 	printf("Zadejte ID darce: ");
 	scanf("%d", &id);
 
-	//Zkontroluje, zda se ID = cislu
-	if (isdigit(id) != 0) {
-		printf("Neplatne ID\nZnovu zadejte ID darce: ");
-		scanf("%d", &id);
+	//Zkontroluje, zda se ID = cislu a zda ID uz neexistuje
+	while (fscanf(darciDB, "%d %s %s\n", &id1, jmeno, prijmeni) != EOF) {
+		if (id == id1) {
+			MessageBeep(MB_ICONWARNING);
+			printf("ID je neplatne nebo jiz existuje\nZnovu zadejte ID darce: ");
+			scanf("%d", &id);
+			fseek(darciDB, 0, SEEK_SET);
+			temp = temp + 2;
+		}
 	}
 
-	printf("Zadejte jmeno darce: ");
-	scanf("%s", &jmeno);
-	printf("Zadejte prijmeni darce: ");
-	scanf("%s", &prijmeni);
-	//prida se ID pro darce DODELAT
 
-	//Vepsani do souboru
-	fprintf(darciDB, "%d %s %s\n",id, jmeno, prijmeni);
+	// Zadavani informaci od uzivatele
+	printf(
+		"\nZadejte jmeno darce:\n"
+		"+-----------------+\n"
+		"|                 |\n" 
+		"+-----------------+\n"
+	);
+	gotoxy(3,12+temp);
+	scanf("%s", &jmeno);
+
+	printf(
+		"\nZadejte prijmeni darce:\n"
+		"+-----------------+\n"
+		"|                 |\n"
+		"+-----------------+\n"
+	);
+	gotoxy(3, 16+temp);
+	scanf("%s", &prijmeni);
+
+
+	// Vepsani do souboru podle id - negunguje
+
+	/*while (fscanf(darciDB, "%d %s %s\n", &id1, jmeno, prijmeni) != EOF) {
+		if (id > id1) {
+			fprintf(darciDB, "%d %s %s\n", id, jmeno, prijmeni);
+			id1 = id1 + 1;
+		} else {
+			fprintf(darciDB, "%d %s %s\n", id, jmeno, prijmeni);
+		}
+	}*/
+
+	// Vepsani do souboru
+	fprintf(darciDB, "%d %s %s\n", id, jmeno, prijmeni);
 
 	// Zavre soubor
 	fclose(darciDB);
+	getchar();
 }
 
 /* Funkce na smazani zaznamu */
@@ -55,21 +115,31 @@ void del() {
 	int id, id1;
 	char jmeno[21], prijmeni[21], skupina[2];
 
+	printf("   _____                          _   \n");
+	printf("  / ____|                        | |  \n");
+	printf(" | (___  _ __ ___   __ _ ______ _| |_ \n");
+	printf("  \\___ \\| '_ ` _ \\ / _` |_  / _` | __|\n");
+	printf("  ____) | | | | | | (_| |/ / (_| | |_ \n");
+	printf(" |_____/|_| |_| |_|\\__,_/___\\__,_|\\__|\n");
+
+	printf("------------------\n");
 	printf("Zadejte ID darce, ktereho chcete odstranit: ");
-	scanf("%d", &id1);
+	scanf("%d", &id);
 
-	FILE *darciDB = fopen("darciDB.txt", "r");
-	FILE *darciDBtemp = fopen("darciDBtemp.txt", "w");
+	FILE* darciDB = fopen("darciDB.txt", "r");
+	FILE* darciDBtemp = fopen("darciDBtemp.txt", "w");
 
-	while (fscanf(darciDB, "%d %s %s\n", &id, jmeno, prijmeni) != EOF) {
+	while (fscanf(darciDB, "%d %s %s\n", &id1, jmeno, prijmeni) != EOF) {
 		if (id != id1) {
-			fprintf(darciDBtemp, "%d %s %s\n", id, jmeno, prijmeni);
+			fprintf(darciDBtemp, "%d %s %s\n", id1, jmeno, prijmeni);
 		}
 	}
+
 	fclose(darciDB);
 	fclose(darciDBtemp);
-	remove("darciDB.txt");
-	rename("darciDBtemp.txt", "darciDB.txt");
+
+	tempf();
+	getchar();
 	return;
 }
 
@@ -80,7 +150,7 @@ void read() {
 	char jmeno[21], prijmeni[21], skupina[2];
 
 	//Otevreni souboru v modu "read"
-	darciDB = fopen("darciDB.txt", "r");
+	FILE* darciDB = fopen("darciDB.txt", "r");
 	
 	//Cteni a printeni souboru v tabulce
 	printf("\nID\t Jmeno\t\t Prijmeni\t Skupina\t Datum odberu");
@@ -103,6 +173,15 @@ void upd() {
 	char jmeno[21], prijmeni[21], skupina[2];
 	char nove_jmeno[21], nove_prijmeni[21], nova_skupina[2];
 
+	printf("  _    _                       _ _   \n");
+	printf(" | |  | |                     (_) |  \n");
+	printf(" | |  | |_ __  _ __ __ ___   ___| |_ \n");
+	printf(" | |  | | '_ \\| '__/ _` \\ \\ / / | __|\n");
+	printf(" | |__| | |_) | | | (_| |\\ V /| | |_ \n");
+	printf("  \\____/| .__/|_|  \\__,_| \\_/ |_|\\__|\n");
+	printf("        |_|                          \n");
+
+	printf("------------------\n");
 	printf("Zadejte ID darce, ktereho chcete upravit: ");
 	scanf("%d", &id1);
 
@@ -110,17 +189,17 @@ void upd() {
 	FILE* darciDBtemp = fopen("darciDBtemp.txt", "w");
 
 	while (fscanf(darciDB, "%d %s %s\n", &id, jmeno, prijmeni) != EOF) {
-		if (id = id1) {
+		if (id == id1) {
 			printf("\nCo chcete upravit?");
-			printf("\n[1] Jmeno\n[2] Prijmeni");
+			printf("\n[1] Jmeno\n[2] Prijmeni\n");
 			scanf("%d", &temp);
 			if (temp == 1) {
-				printf("Zadejte nove jmeno:");
+				printf("Zadejte nove jmeno: ");
 				scanf("%s", &nove_jmeno);
 				fprintf(darciDBtemp, "%d %s %s\n", id, nove_jmeno, prijmeni);
 			}
 			else if(temp == 2) {
-				printf("Zadejte nove prijmeni:");
+				printf("Zadejte nove prijmeni: ");
 				scanf("%s", &nove_prijmeni);
 				fprintf(darciDBtemp, "%d %s %s\n", id, jmeno, nove_prijmeni);
 			}
@@ -129,36 +208,47 @@ void upd() {
 			}
 		}
 		else {
-			fprintf(darciDB, "%d %s %s\n", id, jmeno, prijmeni);
+			fprintf(darciDBtemp, "%d %s %s\n", id, jmeno, prijmeni);
 		}
 	}
 
 	fclose(darciDB);
 	fclose(darciDBtemp);
 
-	remove("darciDB.txt");
-	rename("darciDBtemp.txt", "darciDB.txt");
+	tempf();
+	getchar();
 	return;
 }
 
+/* Funkce Main */
 int main()
 {
 	darciDB = fopen("darciDB.txt", "r");
 	char cmd;
 
+	if (darciDB == NULL) {
+		MessageBeep(MB_ICONWARNING);
+		printf("\t\t\t\t\tNepodařilo se otevřít soubor\nSoubor byl vytvořen\n");
+		darciDB = fopen("darciDB.txt", "a");
+		fclose(darciDB);
+		return 0;
+	}
+
+	//fclose(darciDB);
+
 	do
 	{
-		if (darciDB == NULL) {
-			printf("Not able to open the file.\nFile created! Try again!");
-			darciDB = fopen("darciDB.txt", "a");
-			fclose(darciDB);
-			return 0;
-		}
-
 		system("cls");
-		printf("|| Jednoducha databaze darcu krve ||\n");
+
+		printf("  _____        _        _                         _                        _                   \n");
+		printf(" |  __ \\      | |      | |                       | |                      | |                  \n");
+		printf(" | |  | | __ _| |_ __ _| |__   __ _ _______    __| | __ _ _ __ ___ _   _  | | ___ ____   _____ \n");
+		printf(" | |  | |/ _` | __/ _` | '_ \\ / _` |_  / _ \\  / _` |/ _` | '__/ __| | | | | |/ / '__\\ \\ / / _ \\ \n");
+		printf(" | |__| | (_| | || (_| | |_) | (_| |/ /  __/ | (_| | (_| | | | (__| |_| | |   <| |   \\ V /  __/\n");
+		printf(" |_____/ \\__,_|\\__\\__,_|_.__/ \\__,_/___\\___|  \\__,_|\\__,_|_|  \\___|\\__,_| |_|\\_\\_|    \\_/ \\___|\n");
+
 		printf("------------------\n");
-		printf(" [1] Pridat\n [2] Smazat\n [3] Tisk\n [4] Opravit\n [5] Konec\n");
+		printf("[1] Pridat\n[2] Smazat\n[3] Tisk\n[4] Upravit\n[5] Konec\n");
 		printf("------------------\n");
 		
 		cmd = tolower(getchar());
@@ -179,6 +269,4 @@ int main()
 			break;
 		}
 	} while (cmd != '5');
-
-	fclose(darciDB);
 }
